@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<!--
+    Vulndroid — Deliberately Vulnerable Android App
+    ================================================
+    SECURITY FINDINGS IN THIS FILE:
+
+    [M7] android:debuggable="true"
+         RISK: Allows ADB debugging on production-like builds. Attacker can attach
+         a debugger, inspect memory, bypass checks, extract data via adb backup.
+         FIX: Never set debuggable=true in release builds. Let the build system handle it.
+
+    [M8] android:allowBackup="true"
+         RISK: Full app data backup via `adb backup com.vulndroid` — no root required.
+         Extracts databases, SharedPreferences, files containing auth tokens and PII.
+         FIX: Set android:allowBackup="false" or use android:fullBackupContent rules.
+
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- [M6] Excessive permissions — notes app has no business need for these -->
     <uses-feature
@@ -38,6 +53,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".DashboardActivity"
+            android:exported="false" />
+
+        <activity android:name=".CryptoActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
