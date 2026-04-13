@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.utils
 
 import android.util.Base64
 import android.util.Log
@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec
 /**
  * InsecureCryptoUtil — VulnDroid
  * ================================
- * SECURITY FINDING: [M10] Insufficient Cryptography
+ * SECURITY FINDING: M10 Insufficient Cryptography
  *
  * OWASP Mobile Top 10 2024: M10
  * MASVS:  MSTG-CRYPTO-1, MSTG-CRYPTO-2, MSTG-CRYPTO-3, MSTG-CRYPTO-4
@@ -32,14 +32,14 @@ object InsecureCryptoUtil {
 
     private const val TAG = "VulnDroid_Crypto"
 
-    // ── [M10] VULNERABILITY 1: Hardcoded encryption key ──────────────────────
+    // ── M10 VULNERABILITY 1: Hardcoded encryption key ──────────────────────
     // This key is embedded in the APK and visible in decompiled source.
     // Should be: generated at runtime via Android Keystore, never hardcoded.
     private const val HARDCODED_KEY = "vulndroid2024key"    // 16 bytes = AES-128
     private const val HARDCODED_IV  = "vulndroidiv123456"   // 16 bytes — never reuse IV
 
     /**
-     * [M10] VULNERABILITY: MD5 password hashing.
+     * M10 VULNERABILITY: MD5 password hashing.
      *
      * MD5 is NOT a password hashing algorithm. It is a message digest function.
      * Problems:
@@ -59,7 +59,7 @@ object InsecureCryptoUtil {
     }
 
     /**
-     * [M10] VULNERABILITY: SHA-1 for data integrity checking.
+     * M10 VULNERABILITY: SHA-1 for data integrity checking.
      *
      * SHA-1 was broken in 2017 (Google's SHAttered attack demonstrated collision).
      * It is deprecated for all security uses.
@@ -71,7 +71,7 @@ object InsecureCryptoUtil {
     }
 
     /**
-     * [M10] VULNERABILITY: AES/ECB mode encryption.
+     * M10 VULNERABILITY: AES/ECB mode encryption.
      *
      * ECB (Electronic Code Book) mode is the worst AES mode:
      * - Each 16-byte block is encrypted independently with the same key
@@ -90,7 +90,7 @@ object InsecureCryptoUtil {
             HARDCODED_KEY.toByteArray(Charsets.UTF_8),  // [M10] Hardcoded key
             "AES"
         )
-        // [M10] VULNERABILITY: ECB mode — DO NOT USE
+        // M10 VULNERABILITY: ECB mode — DO NOT USE
         val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
         cipher.init(Cipher.ENCRYPT_MODE, keySpec)
         val encrypted = cipher.doFinal(plaintext.toByteArray(Charsets.UTF_8))
@@ -109,7 +109,7 @@ object InsecureCryptoUtil {
     }
 
     /**
-     * [M10] VULNERABILITY: AES/CBC with hardcoded static IV.
+     * M10 VULNERABILITY: AES/CBC with hardcoded static IV.
      *
      * CBC mode is better than ECB but this implementation has a critical flaw:
      * the IV (Initialization Vector) is hardcoded and reused for every encryption.
@@ -129,7 +129,7 @@ object InsecureCryptoUtil {
      */
     fun encryptCBCFixedIV(plaintext: String): String {
         val keySpec = SecretKeySpec(HARDCODED_KEY.toByteArray(), "AES")
-        // [M10] VULNERABILITY: Hardcoded static IV — never do this
+        // M10 VULNERABILITY: Hardcoded static IV — never do this
         val ivSpec = IvParameterSpec(HARDCODED_IV.toByteArray())
         val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
@@ -138,7 +138,7 @@ object InsecureCryptoUtil {
     }
 
     /**
-     * [M10] VULNERABILITY: Weak key derivation — direct string to bytes.
+     * M10 VULNERABILITY: Weak key derivation — direct string to bytes.
      *
      * Converting a password string directly to AES key bytes is not key derivation.
      * The key space is limited to printable ASCII characters.
@@ -150,7 +150,7 @@ object InsecureCryptoUtil {
      *   val key = factory.generateSecret(spec).encoded
      */
     fun deriveKeyInsecure(password: String): ByteArray {
-        // [M10] VULNERABILITY: Password directly truncated/padded to 16 bytes — not key derivation
+        // M10 VULNERABILITY: Password directly truncated/padded to 16 bytes — not key derivation
         return password.padEnd(16, '0').take(16).toByteArray(Charsets.UTF_8)
     }
 

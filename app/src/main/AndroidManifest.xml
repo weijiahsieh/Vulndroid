@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Vulndroid — Deliberately Vulnerable Android App
+    VulnDroid — Deliberately Vulnerable Android App
     ================================================
     SECURITY FINDINGS IN THIS FILE:
 
@@ -10,7 +10,7 @@
          FIX: Never set debuggable=true in release builds. Let the build system handle it.
 
     [M8] android:allowBackup="true"
-         RISK: Full app data backup via `adb backup com.vulndroid` — no root required.
+         RISK: Full app data backup via `adb backup com.weijia.vulndroid` — no root required.
          Extracts databases, SharedPreferences, files containing auth tokens and PII.
          FIX: Set android:allowBackup="false" or use android:fullBackupContent rules.
 
@@ -33,15 +33,15 @@
     [M5] usesCleartextTraffic="true" in network_security_config
          RISK: App sends data over unencrypted HTTP — vulnerable to MITM on any network.
          FIX: Enforce HTTPS only, remove cleartext allowance.
-
-
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.weijia.vulndroid">
 
     <!-- [M6] Excessive permissions — notes app has no business need for these -->
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="true" />
+        android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -55,19 +55,17 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
-        android:name=".VulnDroidApp"
+        android:name="com.weijia.vulndroid.VulnDroidApp"
         android:allowBackup="true"
         android:debuggable="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
         android:theme="@style/Theme.Vulndroid">
+
         <!-- Main entry point — correctly NOT exported -->
         <activity
-            android:name=".LoginActivity"
+            android:name="com.weijia.vulndroid.ui.login.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -75,65 +73,65 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".DashboardActivity"
+        <activity android:name="com.weijia.vulndroid.ui.dashboard.DashboardActivity"
             android:exported="false" />
 
-        <activity android:name=".CryptoActivity"
+        <activity android:name="com.weijia.vulndroid.ui.storage.StorageActivity"
             android:exported="false" />
 
-        <activity android:name=".StorageActivity"
+        <activity android:name="com.weijia.vulndroid.ui.network.NetworkActivity"
             android:exported="false" />
 
-        <activity android:name=".NetworkActivity"
+        <activity android:name="com.weijia.vulndroid.ui.crypto.CryptoActivity"
             android:exported="false" />
 
         <!--
-           [M8] VULNERABILITY: Exported Activity with no permission check.
-           Attack: `adb shell am start -n com.vulndroid.ui.VulnerableDeepLinkActivity`
-           Or from a malicious app: startActivity(Intent("com.vulndroid.RESET_PASSWORD"))
-           This bypasses the login screen entirely and goes straight to password reset.
-       -->
+            [M8] VULNERABILITY: Exported Activity with no permission check.
+            Attack: `adb shell am start -n com.weijia.vulndroid.ui.VulnerableDeepLinkActivity`
+            Or from a malicious app: startActivity(Intent("com.weijia.vulndroid.RESET_PASSWORD"))
+            This bypasses the login screen entirely and goes straight to password reset.
+        -->
         <activity
-            android:name=".VulnerableDeepLinkActivity"
+            android:name="com.weijia.vulndroid.VulnerableDeepLinkActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.vulndroid.RESET_PASSWORD" />
+                <action android:name="com.weijia.vulndroid.RESET_PASSWORD" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <!--
             [M8] VULNERABILITY: Exported BroadcastReceiver with no permission.
-            Attack: `adb shell am broadcast -a com.vulndroid.TOKEN_REFRESH`
+            Attack: `adb shell am broadcast -a com.weijia.vulndroid.TOKEN_REFRESH`
             Triggers token refresh logic and logs the new token to Logcat.
         -->
         <receiver
-            android:name="com.vulndroid.vulnerabilities.TokenRefreshReceiver"
+            android:name="com.weijia.vulndroid.vulnerabilities.TokenRefreshReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.vulndroid.TOKEN_REFRESH" />
+                <action android:name="com.weijia.vulndroid.TOKEN_REFRESH" />
             </intent-filter>
         </receiver>
 
         <!--
             [M8] VULNERABILITY: Exported ContentProvider with no read/write permission.
-            Attack: `adb shell content query -uri content://com.vulndroid.provider/users`
+            Attack: `adb shell content query -uri content://com.weijia.vulndroid.provider/users`
             Returns all user records including email, username, and plaintext password hash.
         -->
         <!--
             [M8] VULNERABILITY: Exported ContentProvider with no read/write permission.
-            Attack: `adb shell content query -uri content://com.vulndroid.provider/users`
+            Attack: `adb shell content query -uri content://com.weijia.vulndroid.provider/users`
             Returns all user records including email, username, and plaintext password hash.
         -->
         <provider
-            android:name=".UserDataProvider"
-            android:authorities="com.vulndroid.provider"
+            android:name="com.weijia.vulndroid.data.local.UserDataProvider"
+            android:authorities="com.weijia.vulndroid.provider"
             android:exported="true"
             android:readPermission=""
             android:writePermission="" />
 
         <!-- SQL Injection demo screen — not exported, only reachable from Dashboard -->
-        <activity android:name=".SqlInjectionActivity"
+        <activity android:name="com.weijia.vulndroid.SqlInjectionActivity"
             android:exported="false" />
 
     </application>

@@ -16,15 +16,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.weijia.vulndroid.ui.theme.AccentAmber
 import com.weijia.vulndroid.ui.theme.AccentRed
+import com.weijia.vulndroid.ui.theme.DangerBox
 import com.weijia.vulndroid.ui.theme.NavyBorder
 import com.weijia.vulndroid.ui.theme.TextMuted
 import com.weijia.vulndroid.ui.theme.TextPrimary
+import com.weijia.vulndroid.ui.theme.VulnButton
 import com.weijia.vulndroid.ui.theme.VulnDroidTheme
 
 /**
  * VulnerableDeepLinkActivity — Jetpack Compose
  * ==============================================
- * [M8] Exported Activity with no permission — reachable by any app or adb.
+ * M8 Exported Activity with no permission — reachable by any app or adb.
  *
  * Attack:
  *   adb shell am start -n com.vulndroid/.ui.VulnerableDeepLinkActivity
@@ -35,7 +37,7 @@ import com.weijia.vulndroid.ui.theme.VulnDroidTheme
 class VulnerableDeepLinkActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // [M8] VULNERABILITY: No authentication check here
+        // M8 VULNERABILITY: No authentication check here
         // Secure: verify the caller has an active session before rendering
         setContent { VulnDroidTheme { DeepLinkScreen(onBack = ::finish) } }
     }
@@ -84,7 +86,7 @@ fun DeepLinkScreen(onBack: () -> Unit) {
         )
         Spacer(Modifier.height(12.dp))
         VulnButton(text = "Reset Password (No Auth)", color = AccentRed, onClick = {
-            // [M3] No authentication, no rate limiting, no CSRF token
+            // M3 No authentication, no rate limiting, no CSRF token
             Toast.makeText(
                 context,
                 "Reset triggered for: $email — with zero authentication",

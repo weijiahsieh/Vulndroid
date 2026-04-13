@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.data.local
 
 import android.content.ContentProvider
 import android.content.ContentValues
@@ -6,6 +6,7 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 
 /**
  * UserDataProvider — M8: Security Misconfiguration
@@ -57,11 +58,11 @@ class UserDataProvider : ContentProvider() {
     }
 
     /**
-     * [M8] VULNERABILITY: No caller identity check.
+     * M8 VULNERABILITY: No caller identity check.
      * getCallingPackage() would reveal who is querying — but we never check it.
      * Any package gets the full result set.
      *
-     * [M3] VULNERABILITY: No authorization — caller receives all rows,
+     * M3 VULNERABILITY: No authorization — caller receives all rows,
      * not just rows belonging to the authenticated user.
      */
     override fun query(
@@ -80,14 +81,14 @@ class UserDataProvider : ContentProvider() {
             USERS -> {
                 // [M8] Returns ALL users to ANY caller — no permission, no filter
                 readableDb.rawQuery(
-                    "SELECT * FROM ${VulnDroidDatabase.Companion.TABLE_USERS}",
+                    "SELECT * FROM ${VulnDroidDatabase.TABLE_USERS}",
                     null
                 )
             }
             NOTES -> {
                 // [M3] Returns ALL notes regardless of caller identity
                 readableDb.rawQuery(
-                    "SELECT * FROM ${VulnDroidDatabase.Companion.TABLE_NOTES}",
+                    "SELECT * FROM ${VulnDroidDatabase.TABLE_NOTES}",
                     null
                 )
             }
@@ -98,7 +99,7 @@ class UserDataProvider : ContentProvider() {
     override fun getType(uri: Uri): String? = null
 
     /**
-     * [M8] Insert also unprotected — any app can write user records
+     * M8 Insert also unprotected — any app can write user records
      */
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
         Log.w(TAG, "Unprotected insert from: ${callingPackage} | uri: $uri")
@@ -106,8 +107,8 @@ class UserDataProvider : ContentProvider() {
         val writableDb = db.writableDatabase
         return when (uriMatcher.match(uri)) {
             USERS -> {
-                writableDb.insert(VulnDroidDatabase.Companion.TABLE_USERS, null, values)
-                Uri.parse("content://$AUTHORITY/users")
+                writableDb.insert(VulnDroidDatabase.TABLE_USERS, null, values)
+                "content://$AUTHORITY/users".toUri()
             }
             else -> null
         }

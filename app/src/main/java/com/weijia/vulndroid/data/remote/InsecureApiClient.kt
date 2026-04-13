@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.data.remote
 
 import android.util.Log
 import okhttp3.OkHttpClient
@@ -13,7 +13,7 @@ import javax.net.ssl.X509TrustManager
 /**
  * InsecureApiClient — VulnDroid
  * ================================
- * SECURITY FINDING: [M5] Insecure Communication — SSL/TLS Bypass
+ * SECURITY FINDING: M5 Insecure Communication — SSL/TLS Bypass
  *
  * OWASP Mobile Top 10 2024: M5
  * MASVS:  MSTG-NETWORK-3, MSTG-NETWORK-4
@@ -51,13 +51,13 @@ import javax.net.ssl.X509TrustManager
 object InsecureApiClient {
 
     private const val TAG = "VulnDroid_API"
-    // [M1] API key from strings.xml — used in every request header
+    // M1 API key from strings.xml — used in every request header
     private const val API_KEY = "sk-prod-9f8a2b1c3d4e5f6g7h8i9j0k1l2m3n4"
-    // [M5] Base URL uses HTTP — not HTTPS
+    // M5 Base URL uses HTTP — not HTTPS
     private const val BASE_URL = "http://api.vulndroid-backend.com/v1/"
 
     /**
-     * [M5] VULNERABILITY: Custom TrustManager that accepts ALL certificates.
+     * M5 VULNERABILITY: Custom TrustManager that accepts ALL certificates.
      *
      * This is the most dangerous SSL implementation possible.
      * The three empty override methods mean:
@@ -70,10 +70,10 @@ object InsecureApiClient {
      */
     private val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
         override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {
-            // [M5] VULNERABILITY: No validation — accepts any client certificate
+            // M5 VULNERABILITY: No validation — accepts any client certificate
         }
         override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {
-            // [M5] VULNERABILITY: No validation — accepts any server certificate
+            // M5 VULNERABILITY: No validation — accepts any server certificate
             // This is what allows MITM attacks — attacker's cert is accepted here
             Log.w(TAG, "checkServerTrusted called — accepting without validation (INSECURE)")
         }
@@ -90,11 +90,11 @@ object InsecureApiClient {
      * - No certificate pinning
      */
     fun buildInsecureClient(): OkHttpClient {
-        // [M5] VULNERABILITY: SSLContext initialized with trust-all TrustManager
+        // M5 VULNERABILITY: SSLContext initialized with trust-all TrustManager
         val sslContext = SSLContext.getInstance("SSL")
         sslContext.init(null, trustAllCerts, SecureRandom())
 
-        // [M6] VULNERABILITY: Logging full request/response bodies to Logcat
+        // M6 VULNERABILITY: Logging full request/response bodies to Logcat
         // Auth tokens, passwords, and PII are all logged at DEBUG level
         val loggingInterceptor = HttpLoggingInterceptor { message ->
             Log.d(TAG, message)  // Full HTTP body logged — tokens, PII, everything
@@ -105,9 +105,9 @@ object InsecureApiClient {
         return OkHttpClient.Builder()
             .sslSocketFactory(
                 sslContext.socketFactory,
-                trustAllCerts[0] as X509TrustManager  // [M5] VULNERABILITY
+                trustAllCerts[0] as X509TrustManager  // M5 VULNERABILITY
             )
-            // [M5] VULNERABILITY: HostnameVerifier accepts any hostname
+            // M5 VULNERABILITY: HostnameVerifier accepts any hostname
             // Without this, OkHttp would still check the hostname even with custom TrustManager
             .hostnameVerifier { hostname, session ->
                 Log.w(TAG, "Accepting hostname without verification: $hostname")
@@ -115,7 +115,7 @@ object InsecureApiClient {
             }
             .addInterceptor(loggingInterceptor)
             .addInterceptor { chain ->
-                // [M1] VULNERABILITY: API key added to every request header
+                // M1 VULNERABILITY: API key added to every request header
                 val request = chain.request().newBuilder()
                     .addHeader("X-API-Key", API_KEY)
                     .addHeader("Authorization", "Bearer $API_KEY")
@@ -131,17 +131,17 @@ object InsecureApiClient {
      */
     fun fetchUserProfile(userId: String): String {
         val client = buildInsecureClient()
-        // [M5] VULNERABILITY: HTTP URL (not HTTPS) for API call
+        // M5 VULNERABILITY: HTTP URL (not HTTPS) for API call
         val request = Request.Builder()
             .url("${BASE_URL}users/$userId")  // Cleartext HTTP
             .build()
 
         return try {
             val response = client.newCall(request).execute()
-            // [M4] VULNERABILITY: Response body used without validation
+            // M4 VULNERABILITY: Response body used without validation
             response.body?.string() ?: ""
         } catch (e: Exception) {
-            // [M4] VULNERABILITY: Full exception message exposed to caller
+            // M4 VULNERABILITY: Full exception message exposed to caller
             "Error: ${e.message}"
         }
     }

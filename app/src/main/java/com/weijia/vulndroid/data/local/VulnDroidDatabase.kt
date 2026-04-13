@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.data.local
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -10,7 +10,7 @@ import android.util.Log
  * ====================================================
  * SECURITY FINDINGS IN THIS FILE:
  *
- * [M4] Insufficient Input/Output Validation — SQL Injection
+ * M4 Insufficient Input/Output Validation — SQL Injection
  *      The searchUsers() and getUserByCredentials() methods build SQL queries
  *      via raw string concatenation. Any input is directly embedded into the query.
  *
@@ -25,13 +25,13 @@ import android.util.Log
  *        Query becomes: SELECT * FROM users WHERE username='admin' --' AND password='anything'
  *        The -- comments out the password check — logs in as admin with any password
  *
- * [M9] Insecure Data Storage — Plaintext sensitive data in SQLite
+ * M9 Insecure Data Storage — Plaintext sensitive data in SQLite
  *      Passwords stored as MD5 hashes (broken) — see InsecureCryptoUtil.
  *      Notes column stores content in plaintext with no encryption.
  *      Database file at: /data/data/com.vulndroid/databases/vulndroid.db
  *      Extraction: `adb shell run-as com.vulndroid sqlite3 databases/vulndroid.db .dump`
  *
- * [M9] No database encryption
+ * M9 No database encryption
  *      Standard SQLiteOpenHelper creates an unencrypted database file.
  *      The db_encryption_key in strings.xml is referenced but never actually used.
  *      FIX: Use SQLCipher or EncryptedSharedPreferences equivalent for SQLite.
@@ -48,11 +48,11 @@ class VulnDroidDatabase(context: Context) :
         const val TABLE_USERS = "users"
         const val COL_ID = "id"
         const val COL_USERNAME = "username"
-        const val COL_PASSWORD = "password"   // [M9] Stores MD5 hash — not bcrypt/Argon2
+        const val COL_PASSWORD = "password"   // M9 Stores MD5 hash — not bcrypt/Argon2
         const val COL_EMAIL = "email"
-        const val COL_PHONE = "phone"         // [M6] PII stored in plaintext
-        const val COL_DOB = "date_of_birth"   // [M6] PII stored in plaintext
-        const val COL_CREDIT_CARD = "credit_card_last4" // [M6] Financial data in plaintext DB
+        const val COL_PHONE = "phone"         // M6 PII stored in plaintext
+        const val COL_DOB = "date_of_birth"   // M6 PII stored in plaintext
+        const val COL_CREDIT_CARD = "credit_card_last4" // M6 Financial data in plaintext DB
         const val COL_IS_ADMIN = "is_admin"
         const val COL_SESSION_TOKEN = "session_token"
 
@@ -63,7 +63,7 @@ class VulnDroidDatabase(context: Context) :
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        // [M9] VULNERABILITY: Schema stores sensitive PII in plaintext columns
+        // M9 VULNERABILITY: Schema stores sensitive PII in plaintext columns
         db.execSQL("""
             CREATE TABLE $TABLE_USERS (
                 $COL_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +91,7 @@ class VulnDroidDatabase(context: Context) :
     }
 
     private fun seedDatabase(db: SQLiteDatabase) {
-        // [M9] MD5 hash of "password123" — trivially cracked via rainbow tables
+        // M9 MD5 hash of "password123" — trivially cracked via rainbow tables
         val weakHash = "482c811da5d5b4bc6d497ffa98491e38"
         db.execSQL("""
             INSERT INTO $TABLE_USERS
@@ -116,7 +116,7 @@ class VulnDroidDatabase(context: Context) :
     }
 
     /**
-     * [M4] VULNERABILITY: SQL Injection via string concatenation.
+     * M4 VULNERABILITY: SQL Injection via string concatenation.
      *
      * SAFE version uses parameterized queries:
      *   db.rawQuery("SELECT * FROM users WHERE username LIKE ?", arrayOf("%$query%"))
@@ -129,9 +129,9 @@ class VulnDroidDatabase(context: Context) :
         val results = mutableListOf<Map<String, String>>()
         val db = readableDatabase
 
-        // [M4] VULNERABILITY: Raw string concatenation — SQL injection possible
+        // M4 VULNERABILITY: Raw string concatenation — SQL injection possible
         val sql = "SELECT * FROM $TABLE_USERS WHERE $COL_USERNAME LIKE '%$query%'"
-        Log.d(TAG, "Executing query: $sql")  // [M6] VULNERABILITY: Logging raw SQL with user input
+        Log.d(TAG, "Executing query: $sql")  // M6 VULNERABILITY: Logging raw SQL with user input
 
         try {
             val cursor = db.rawQuery(sql, null)
@@ -144,7 +144,7 @@ class VulnDroidDatabase(context: Context) :
             }
             cursor.close()
         } catch (e: Exception) {
-            // [M4] VULNERABILITY: Exposing raw SQL error to the UI — reveals schema
+            // M4 VULNERABILITY: Exposing raw SQL error to the UI — reveals schema
             Log.e(TAG, "SQL Error (exposing to user): ${e.message}")
             throw RuntimeException("Database error: ${e.message}") // Full error shown in UI
         }
@@ -152,14 +152,14 @@ class VulnDroidDatabase(context: Context) :
     }
 
     /**
-     * [M3] + [M4] VULNERABILITY: Authentication bypass via SQL injection.
+     * M3 + M4 VULNERABILITY: Authentication bypass via SQL injection.
      *
      * Attack:
      *   username = admin' --
      *   password = anything
      *
      * Resulting query:
-     *   SELECT * FROM users WHERE username='admin' --' AND password='[md5_anything]'
+     *   SELECT * FROM users WHERE username='admin' --' AND password='md5_anything'
      *   The -- comments out the password check entirely.
      *
      * SAFE version:
@@ -169,10 +169,10 @@ class VulnDroidDatabase(context: Context) :
     fun getUserByCredentials(username: String, hashedPassword: String): Map<String, String>? {
         val db = readableDatabase
 
-        // [M4] VULNERABILITY: String concatenation in auth query
+        // M4 VULNERABILITY: String concatenation in auth query
         val sql = "SELECT * FROM $TABLE_USERS WHERE " +
                 "$COL_USERNAME='$username' AND $COL_PASSWORD='$hashedPassword'"
-        Log.d(TAG, "Auth query: $sql")  // [M6] VULNERABILITY: Auth query with hash logged
+        Log.d(TAG, "Auth query: $sql")  // M6 VULNERABILITY: Auth query with hash logged
 
         val cursor = db.rawQuery(sql, null)
         return if (cursor.moveToFirst()) {
@@ -189,13 +189,13 @@ class VulnDroidDatabase(context: Context) :
     }
 
     /**
-     * [M9] Retrieve notes without access control check.
-     * [M3] VULNERABILITY: No authorization — any user can retrieve any user's notes
+     * M9 Retrieve notes without access control check.
+     * M3 VULNERABILITY: No authorization — any user can retrieve any user's notes
      *      by passing a different ownerUsername. No check that the caller is the owner.
      */
     fun getNotesForUser(ownerUsername: String): List<String> {
         val db = readableDatabase
-        // [M4] SQL injection also possible here
+        // M4 SQL injection also possible here
         val sql = "SELECT $COL_NOTE_CONTENT FROM $TABLE_NOTES WHERE $COL_NOTE_OWNER='$ownerUsername'"
         val cursor = db.rawQuery(sql, null)
         val notes = mutableListOf<String>()

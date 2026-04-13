@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.ui.storage
 
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -16,22 +16,29 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.weijia.vulndroid.data.local.VulnDroidDatabase
 import com.weijia.vulndroid.ui.theme.AccentAmber
 import com.weijia.vulndroid.ui.theme.AccentRed
+import com.weijia.vulndroid.ui.theme.AdbHint
+import com.weijia.vulndroid.ui.theme.CodeCard
 import com.weijia.vulndroid.ui.theme.NavyBorder
 import com.weijia.vulndroid.ui.theme.NavySurface
+import com.weijia.vulndroid.ui.theme.ResultRow
+import com.weijia.vulndroid.ui.theme.SectionLabel
 import com.weijia.vulndroid.ui.theme.TextMuted
 import com.weijia.vulndroid.ui.theme.TextPrimary
+import com.weijia.vulndroid.ui.theme.VulnButton
 import com.weijia.vulndroid.ui.theme.VulnDroidTheme
+import com.weijia.vulndroid.ui.theme.VulnScreen
 import java.io.File
 
 /**
  * StorageActivity — Jetpack Compose
  * ====================================
- * [M9] Displays live SharedPreferences content including the plaintext password
- * [M4] Notes saved via raw string SQL — injection possible in note content
- * [M9] External storage log reader — shows credentials written to /sdcard/
- * [M6] All data also logged to Logcat
+ * M9 Displays live SharedPreferences content including the plaintext password
+ * M4 Notes saved via raw string SQL — injection possible in note content
+ * M9 External storage log reader — shows credentials written to /sdcard/
+ * M6 All data also logged to Logcat
  */
 class StorageActivity : ComponentActivity() {
 

@@ -11,17 +11,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.weijia.vulndroid.data.local.VulnDroidDatabase
 import com.weijia.vulndroid.ui.theme.AccentAmber
 import com.weijia.vulndroid.ui.theme.AccentRed
+import com.weijia.vulndroid.ui.theme.AdbHint
+import com.weijia.vulndroid.ui.theme.CodeCard
+import com.weijia.vulndroid.ui.theme.DangerBox
 import com.weijia.vulndroid.ui.theme.NavyBorder
+import com.weijia.vulndroid.ui.theme.ResultRow
+import com.weijia.vulndroid.ui.theme.SectionLabel
 import com.weijia.vulndroid.ui.theme.TextMuted
 import com.weijia.vulndroid.ui.theme.TextPrimary
+import com.weijia.vulndroid.ui.theme.VulnButton
 import com.weijia.vulndroid.ui.theme.VulnDroidTheme
+import com.weijia.vulndroid.ui.theme.VulnScreen
 
 /**
  * SqlInjectionActivity — Jetpack Compose
  * ========================================
- * [M4] Live SQL injection demo — type attack payloads, see generated SQL,
+ * M4 Live SQL injection demo — type attack payloads, see generated SQL,
  *      watch the full database dump appear in the results list.
  *
  * Attack payloads to try:
@@ -64,14 +72,16 @@ fun SqlInjectionScreen(
         catch (e: Exception) { errorMsg = e.message ?: "Error" }
     }
 
-    VulnScreen(title = "SQL Injection", owaspTag = "M4 — OWASP Mobile Top 10",
-        owaspColor = AccentRed, onBack = onBack) {
+    VulnScreen(
+        title = "SQL Injection", owaspTag = "M4 — OWASP Mobile Top 10",
+        owaspColor = AccentRed, onBack = onBack
+    ) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
 
             // Attack payloads hint
             DangerBox(
                 title = "💉  Attack Payloads to Try",
-                body  = "Dump all users:\n  ' OR '1'='1\n\n" +
+                body = "Dump all users:\n  ' OR '1'='1\n\n" +
                         "Auth bypass (in Login screen):\n  admin' --\n\n" +
                         "UNION dump:\n  ' UNION SELECT * FROM notes --"
             )
@@ -92,8 +102,9 @@ fun SqlInjectionScreen(
             VulnButton(text = "Search (Vulnerable)", color = AccentRed, onClick = {
                 errorMsg = ""
                 lastQuery = "SELECT * FROM users WHERE username LIKE '%$input%'"
-                try { results = search(input) }
-                catch (e: Exception) {
+                try {
+                    results = search(input)
+                } catch (e: Exception) {
                     errorMsg = "SQL ERROR (schema revealed): ${e.message}"
                     results = emptyList()
                 }
@@ -107,7 +118,8 @@ fun SqlInjectionScreen(
 
             SectionLabel("Results — ${results.size} row(s) returned")
             results.forEachIndexed { i, row ->
-                val isSensitive = row["is_admin"] == "1" || !row["credit_card_last4"].isNullOrEmpty()
+                val isSensitive =
+                    row["is_admin"] == "1" || !row["credit_card_last4"].isNullOrEmpty()
                 ResultRow(
                     title = "Row ${i + 1}: ${row["username"] ?: "?"}",
                     content = row.entries.joinToString("\n") { (k, v) ->

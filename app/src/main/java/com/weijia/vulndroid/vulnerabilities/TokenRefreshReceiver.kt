@@ -1,10 +1,12 @@
-package com.vulndroid.vulnerabilities
+package com.weijia.vulndroid.vulnerabilities
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.util.Base64
 import android.util.Log
+import androidx.core.content.edit
 
 /**
  * TokenRefreshReceiver — M8: Security Misconfiguration
@@ -54,13 +56,13 @@ class TokenRefreshReceiver : BroadcastReceiver() {
         }
 
         // Generate a new fake token
-        val newToken = android.util.Base64.encodeToString(
+        val newToken = Base64.encodeToString(
             "$username:refreshed:${System.currentTimeMillis()}".toByteArray(),
-            android.util.Base64.NO_WRAP
+            Base64.NO_WRAP
         )
 
         // [M9] VULNERABILITY: New token written to SharedPreferences
-        prefs.edit().putString("auth_token", newToken).apply()
+        prefs.edit { putString("auth_token", newToken) }
 
         // [M6] VULNERABILITY: New token logged to Logcat — readable via adb
         Log.d(TAG, "New auth token generated: $newToken")

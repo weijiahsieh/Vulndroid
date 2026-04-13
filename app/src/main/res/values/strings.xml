@@ -1,3 +1,67 @@
+<!--
+    VulnDroid — strings.xml
+    ========================
+    SECURITY FINDING: [M1] Improper Credential Usage — Hardcoded Credentials
+
+    OWASP Mobile Top 10 2024: M1
+    MASVS:  MSTG-STORAGE-14
+    CWE:    CWE-798 (Use of Hard-coded Credentials)
+    Risk:   CRITICAL
+
+    DESCRIPTION:
+    API keys, passwords, and encryption keys are embedded directly in strings.xml.
+    This file is compiled into the APK and can be trivially extracted by any attacker:
+
+    Attack steps:
+    1. Download APK from Play Store (or get it via adb)
+    2. Run: apktool d vulndroid.apk
+    3. Open: res/values/strings.xml
+    4. All credentials are visible in plaintext — no decompilation needed.
+
+    Even with ProGuard/R8 obfuscation, strings.xml values are NOT obfuscated.
+    They remain visible in the decompiled APK.
+
+    REAL-WORLD IMPACT:
+    - API key exposure → attacker can make authenticated API calls on your behalf
+    - Admin password → direct backend access
+    - Encryption key → decrypt any data the app has encrypted
+
+    REMEDIATION:
+    - Store secrets in environment variables injected at build time via BuildConfig
+    - Use Android Keystore for runtime key generation — never store keys in code or resources
+    - Use a secrets manager (AWS Secrets Manager, HashiCorp Vault) for backend keys
+    - Rotate any key that was ever committed to source control
+    - Use git-secrets or truffleHog in CI/CD to prevent future commits
+-->
 <resources>
-    <string name="app_name">Vulndroid</string>
+    <string name="app_name">VulnDroid</string>
+
+    <!-- [M1] VULNERABILITY: Hardcoded production API key -->
+    <!-- Found by: apktool d vulndroid.apk → res/values/strings.xml -->
+    <string name="api_key">sk-prod-9f8a2b1c3d4e5f6g7h8i9j0k1l2m3n4</string>
+    <string name="api_base_url">http://api.vulndroid-backend.com/v1/</string>
+
+    <!-- [M1] VULNERABILITY: Hardcoded admin backdoor credentials -->
+    <string name="admin_username">admin@vulndroid.com</string>
+    <string name="admin_password">Admin@123!</string>
+
+    <!-- [M1] VULNERABILITY: Hardcoded database encryption key -->
+    <!-- Used in CryptoActivity.kt to "encrypt" the local SQLite database -->
+    <string name="db_encryption_key">vulndroid-db-secret-2024</string>
+
+    <!-- [M1] VULNERABILITY: Hardcoded Firebase config with write access -->
+    <string name="firebase_database_url">https://vulndroid-default-rtdb.firebaseio.com</string>
+    <string name="firebase_api_key">AIzaSyD-vulndroid-fake-but-realistic-key</string>
+    <string name="firebase_app_id">1:123456789:android:abc123def456</string>
+
+    <!-- [M1] VULNERABILITY: Hardcoded JWT signing secret -->
+    <!-- Used server-side but embedded here "for convenience during testing" -->
+    <string name="jwt_secret">my-super-secret-jwt-signing-key-never-commit-this</string>
+
+    <!-- Non-vulnerable strings -->
+    <string name="login_title">Welcome to VulnDroid</string>
+    <string name="username_hint">Email address</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Sign In</string>
+    <string name="logout">Log Out</string>
 </resources>

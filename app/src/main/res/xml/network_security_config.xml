@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SECURITY FINDING: [M5] Insecure Communication — Cleartext Traffic Allowed
+
+    OWASP Mobile Top 10 2024: M5
+    MASVS:  MSTG-NETWORK-2
+    CWE:    CWE-319 (Cleartext Transmission of Sensitive Information)
+    Risk:   HIGH
+
+    DESCRIPTION:
+    This configuration explicitly allows cleartext (HTTP) traffic to all domains.
+    Any data transmitted over HTTP is visible to anyone on the same network segment —
+    coffee shop Wi-Fi, corporate proxy, ISP, rogue access point.
+
+    This means:
+    - Auth tokens sent in HTTP headers are captured by Wireshark/tcpdump
+    - User credentials sent in POST body are readable in plaintext
+    - Session cookies are intercepted and replayed for session hijacking
+    - API responses containing PII are exposed to passive eavesdroppers
+
+    Combined with the disabled certificate validation in InsecureApiClient.kt,
+    this app is trivially attacked with a MITM proxy (Burp Suite, mitmproxy).
+
+    ATTACK STEPS:
+    1. Configure Burp Suite proxy on same network as device/emulator
+    2. Set emulator proxy to Burp Suite's IP:8080
+    3. Install Burp's CA certificate on the emulator
+    4. All HTTP traffic is captured in plaintext — auth tokens, passwords, PII
+
+    REMEDIATION:
+    - Remove cleartextTrafficPermitted="true" — default is false on API 28+
+    - Enforce HTTPS for all endpoints including internal/debug ones
+    - Implement certificate pinning for sensitive endpoints (see MASTG guidance)
+    - Use network_security_config.xml to pin specific certificates, not to loosen security
+-->
+<network-security-config>
+
+    <!--
+        [M5] VULNERABILITY: Cleartext traffic allowed globally.
+        Default on API 28+ is cleartextTrafficPermitted="false" — this overrides it.
+        The api_base_url in strings.xml uses HTTP — this config is what makes it work.
+    -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <!-- [M5] VULNERABILITY: Trusting user-installed certificates -->
+            <!-- Allows Burp Suite and mitmproxy CA certs to be trusted automatically -->
+            <!-- Attackers install their proxy CA to intercept all TLS traffic -->
+            <certificates src="system" />
+            <certificates src="user"/>   <!-- VULNERABILITY: never trust user certs in prod -->
+        </trust-anchors>
+    </base-config>
+
+    <!--
+        REMEDIATION (commented out — what this SHOULD look like):
+    -->
+    <!--
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config>
+        <domain includeSubdomains="true">api.vulndroid-backend.com</domain>
+        <pin-set expiration="2026-12-31">
+            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
+            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
+        </pin-set>
+    </domain-config>
+    -->
+
+</network-security-config>

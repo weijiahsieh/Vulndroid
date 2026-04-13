@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.ui.network
 
 import android.os.Bundle
 import android.util.Log
@@ -14,12 +14,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.weijia.vulndroid.data.remote.InsecureApiClient
 import com.weijia.vulndroid.ui.theme.AccentAmber
 import com.weijia.vulndroid.ui.theme.AccentRed
+import com.weijia.vulndroid.ui.theme.AdbHint
+import com.weijia.vulndroid.ui.theme.CodeCard
+import com.weijia.vulndroid.ui.theme.DangerBox
 import com.weijia.vulndroid.ui.theme.NavyBorder
+import com.weijia.vulndroid.ui.theme.SectionLabel
+import com.weijia.vulndroid.ui.theme.SecureBox
 import com.weijia.vulndroid.ui.theme.TextMuted
 import com.weijia.vulndroid.ui.theme.TextPrimary
+import com.weijia.vulndroid.ui.theme.VulnButton
 import com.weijia.vulndroid.ui.theme.VulnDroidTheme
+import com.weijia.vulndroid.ui.theme.VulnScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,9 +35,9 @@ import kotlinx.coroutines.withContext
 /**
  * NetworkActivity — Jetpack Compose
  * ====================================
- * [M5] Makes live insecure HTTP call — disabled SSL validation, cleartext traffic
- * [M1] API key shown in request display — hardcoded in InsecureApiClient
- * [M6] Full request/response body logged to Logcat
+ * M5 Makes live insecure HTTP call — disabled SSL validation, cleartext traffic
+ * M1 API key shown in request display — hardcoded in InsecureApiClient
+ * M6 Full request/response body logged to Logcat
  */
 class NetworkActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,14 +54,16 @@ fun NetworkScreen(onBack: () -> Unit) {
     var responseText by remember { mutableStateOf("Response will appear here\n\nMonitor with:\nadb logcat | grep VulnDroid_API") }
     var isLoading by remember { mutableStateOf(false) }
 
-    VulnScreen(title = "Insecure Network", owaspTag = "M5 — OWASP Mobile Top 10",
-        owaspColor = AccentRed, onBack = onBack) {
+    VulnScreen(
+        title = "Insecure Network", owaspTag = "M5 — OWASP Mobile Top 10",
+        owaspColor = AccentRed, onBack = onBack
+    ) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
 
             // SSL status card
             DangerBox(
                 title = "🔴  SSL VALIDATION: DISABLED",
-                body  = "• All certificates accepted including self-signed\n" +
+                body = "• All certificates accepted including self-signed\n" +
                         "• User-installed CA certs trusted (Burp Suite works instantly)\n" +
                         "• HTTP cleartext traffic explicitly permitted\n" +
                         "• Hostname verification disabled"
@@ -89,11 +99,12 @@ fun NetworkScreen(onBack: () -> Unit) {
                     }
                     scope.launch {
                         val result = withContext(Dispatchers.IO) {
-                            try { InsecureApiClient.fetchUserProfile(userId) }
-                            catch (e: Exception) {
+                            try {
+                                InsecureApiClient.fetchUserProfile(userId)
+                            } catch (e: Exception) {
                                 "Network error (no real server in demo): ${e.message}\n\n" +
-                                "In a real deployment Burp Suite would capture\n" +
-                                "the auth token and API key in plaintext."
+                                        "In a real deployment Burp Suite would capture\n" +
+                                        "the auth token and API key in plaintext."
                             }
                         }
                         responseText = "Response (also in Logcat):\n\n$result"
@@ -114,11 +125,11 @@ fun NetworkScreen(onBack: () -> Unit) {
             SectionLabel("Burp Suite Intercept Setup")
             SecureBox(
                 body = "1. Burp Suite → Proxy → 127.0.0.1:8080\n" +
-                       "2. adb reverse tcp:8080 tcp:8080\n" +
-                       "3. Emulator: Settings → WiFi → Proxy\n" +
-                       "   Host: 127.0.0.1  Port: 8080\n" +
-                       "4. No CA cert needed — trust-all accepts Burp's cert\n" +
-                       "5. All traffic visible in Burp HTTP History tab"
+                        "2. adb reverse tcp:8080 tcp:8080\n" +
+                        "3. Emulator: Settings → WiFi → Proxy\n" +
+                        "   Host: 127.0.0.1  Port: 8080\n" +
+                        "4. No CA cert needed — trust-all accepts Burp's cert\n" +
+                        "5. All traffic visible in Burp HTTP History tab"
             )
 
             Spacer(Modifier.height(32.dp))

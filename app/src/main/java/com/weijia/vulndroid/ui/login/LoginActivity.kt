@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.ui.login
 
 import android.content.Intent
 import android.content.SharedPreferences
@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.weijia.vulndroid.ui.dashboard.DashboardActivity
 import com.weijia.vulndroid.ui.theme.AccentAmber
 import com.weijia.vulndroid.ui.theme.AccentBlue
 import com.weijia.vulndroid.ui.theme.AccentRed
@@ -37,16 +38,18 @@ import com.weijia.vulndroid.ui.theme.TextMuted
 import com.weijia.vulndroid.ui.theme.TextPrimary
 import com.weijia.vulndroid.ui.theme.TextSecond
 import com.weijia.vulndroid.ui.theme.VulnDroidTheme
+import com.weijia.vulndroid.ui.theme.VulnTag
 import java.io.File
 import java.util.Date
+import androidx.core.content.edit
 
 /**
  * LoginActivity — Jetpack Compose
  * ================================
- * [M1] Hardcoded admin backdoor in companion object — visible after apktool decompile
- * [M3] Client-side auth bypass — no real server validation
- * [M6] Username + password logged to Logcat via Log.d
- * [M9] Plaintext password stored in SharedPreferences
+ * M1 Hardcoded admin backdoor in companion object — visible after apktool decompile
+ * M3 Client-side auth bypass — no real server validation
+ * M6 Username + password logged to Logcat via Log.d
+ * M9 Plaintext password stored in SharedPreferences
  *
  * UI and logic are co-located in the same file — idiomatic Compose pattern.
  */
@@ -54,7 +57,7 @@ class LoginActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "VulnDroid_Login"
-        // [M1] VULNERABILITY: Hardcoded credentials visible in decompiled APK
+        // M1 VULNERABILITY: Hardcoded credentials visible in decompiled APK
         private const val BACKDOOR_USER = "admin@vulndroid.com"
         private const val BACKDOOR_PASS = "Admin@123!"
     }
@@ -65,7 +68,7 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         prefs = getSharedPreferences("user_session", MODE_PRIVATE)
 
-        // [M3] Auto-login from stored credentials — no server token validation
+        // M3 Auto-login from stored credentials — no server token validation
         val savedUser = prefs.getString("username", null)
         val savedPass = prefs.getString("password", null)
         if (savedUser != null && savedPass != null) {
@@ -80,10 +83,10 @@ class LoginActivity : ComponentActivity() {
     }
 
     private fun attemptLogin(username: String, password: String) {
-        // [M6] VULNERABILITY: Credentials written to system Logcat
+        // M6 VULNERABILITY: Credentials written to system Logcat
         Log.d(TAG, "Login attempt — username: $username, password: $password")
 
-        // [M3] VULNERABILITY: Hardcoded backdoor bypasses server auth entirely
+        // M3 VULNERABILITY: Hardcoded backdoor bypasses server auth entirely
         if (username == BACKDOOR_USER && password == BACKDOOR_PASS) {
             Log.w(TAG, "Admin backdoor used")
             saveAndLogin(username, password, isAdmin = true); return
@@ -97,16 +100,16 @@ class LoginActivity : ComponentActivity() {
         val token = Base64.encodeToString(
             "$username:${System.currentTimeMillis()}".toByteArray(), Base64.NO_WRAP
         )
-        // [M9] VULNERABILITY: Plaintext password stored in SharedPreferences
+        // M9 VULNERABILITY: Plaintext password stored in SharedPreferences
         // Extract: adb shell run-as com.vulndroid cat shared_prefs/user_session.xml
-        prefs.edit()
-            .putString("username", username)
-            .putString("password", password)   // ← plaintext password — never do this
-            .putString("auth_token", token)
-            .putBoolean("is_admin", isAdmin)
-            .putBoolean("is_logged_in", true)
-            .apply()
-        // [M9] Also write to world-readable external storage
+        prefs.edit {
+            putString("username", username)
+                .putString("password", password)   // ← plaintext password — never do this
+                .putString("auth_token", token)
+                .putBoolean("is_admin", isAdmin)
+                .putBoolean("is_logged_in", true)
+        }
+        // M9 Also write to world-readable external storage
         try {
             val f = File(Environment.getExternalStorageDirectory(), "vulndroid_debug.log")
             f.appendText("${Date()}: login user=$username pass=$password\n")

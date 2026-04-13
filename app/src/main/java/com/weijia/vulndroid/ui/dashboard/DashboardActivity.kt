@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.ui.dashboard
 
 import android.content.Intent
 import android.content.SharedPreferences
@@ -21,6 +21,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.weijia.vulndroid.ui.crypto.CryptoActivity
+import com.weijia.vulndroid.ui.network.NetworkActivity
+import com.weijia.vulndroid.SqlInjectionActivity
+import com.weijia.vulndroid.ui.storage.StorageActivity
+import com.weijia.vulndroid.VulnerableDeepLinkActivity
+import com.weijia.vulndroid.ui.login.LoginActivity
 import com.weijia.vulndroid.ui.theme.NavyBorder
 import com.weijia.vulndroid.ui.theme.NavyDark
 import com.weijia.vulndroid.ui.theme.NavySurface
@@ -28,13 +34,14 @@ import com.weijia.vulndroid.ui.theme.TextMuted
 import com.weijia.vulndroid.ui.theme.TextPrimary
 import com.weijia.vulndroid.ui.theme.TextSecond
 import com.weijia.vulndroid.ui.theme.VulnDroidTheme
+import androidx.core.content.edit
 
 /**
  * DashboardActivity — Jetpack Compose
  * =====================================
- * [M3] No server-side session validation on resume — is_logged_in read from
+ * M3 No server-side session validation on resume — is_logged_in read from
  *      SharedPreferences without checking token expiry or server state.
- * [M8] Misconfiguration banner reflects real AndroidManifest.xml settings.
+ * M8 Misconfiguration banner reflects real AndroidManifest.xml settings.
  */
 class DashboardActivity : ComponentActivity() {
 
@@ -43,7 +50,7 @@ class DashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = getSharedPreferences("user_session", MODE_PRIVATE)
-        // [M3] No token expiry check — session lives forever
+        // M3 No token expiry check — session lives forever
         val username = intent.getStringExtra("username") ?: prefs.getString("username", "unknown") ?: "unknown"
 
         setContent {
@@ -63,7 +70,7 @@ class DashboardActivity : ComponentActivity() {
                         )
                     },
                     onLogout = {
-                        prefs.edit().clear().apply()
+                        prefs.edit { clear() }
                         startActivity(Intent(this, LoginActivity::class.java))
                         finish()
                     }

@@ -1,11 +1,11 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.ui.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,16 +14,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.weijia.vulndroid.ui.theme.AccentAmber
-import com.weijia.vulndroid.ui.theme.AccentBlue
-import com.weijia.vulndroid.ui.theme.AccentGreen
-import com.weijia.vulndroid.ui.theme.AccentRed
-import com.weijia.vulndroid.ui.theme.NavyBorder
-import com.weijia.vulndroid.ui.theme.NavyDark
-import com.weijia.vulndroid.ui.theme.NavySurface
-import com.weijia.vulndroid.ui.theme.TextMuted
-import com.weijia.vulndroid.ui.theme.TextPrimary
-import com.weijia.vulndroid.ui.theme.TextSecond
 
 // ── Screen scaffold with back-arrow toolbar ───────────────────────────────────
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +37,7 @@ fun VulnScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextSecond)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextSecond)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF0D1220))
@@ -195,10 +185,10 @@ fun VulnButton(
 // ── Result row card ───────────────────────────────────────────────────────────
 @Composable
 fun ResultRow(
+    modifier: Modifier = Modifier,
     title: String,
     content: String,
-    highlight: Boolean = false,
-    modifier: Modifier = Modifier
+    highlight: Boolean = false
 ) {
     Column(
         modifier = modifier

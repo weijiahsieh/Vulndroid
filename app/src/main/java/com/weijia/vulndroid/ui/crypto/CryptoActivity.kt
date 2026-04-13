@@ -1,4 +1,4 @@
-package com.weijia.vulndroid
+package com.weijia.vulndroid.ui.crypto
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,17 +13,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.weijia.vulndroid.utils.InsecureCryptoUtil
 import com.weijia.vulndroid.ui.theme.AccentAmber
 import com.weijia.vulndroid.ui.theme.AccentRed
+import com.weijia.vulndroid.ui.theme.AdbHint
+import com.weijia.vulndroid.ui.theme.CodeCard
+import com.weijia.vulndroid.ui.theme.DangerBox
 import com.weijia.vulndroid.ui.theme.NavyBorder
+import com.weijia.vulndroid.ui.theme.SectionLabel
+import com.weijia.vulndroid.ui.theme.SecureBox
 import com.weijia.vulndroid.ui.theme.TextMuted
 import com.weijia.vulndroid.ui.theme.TextPrimary
+import com.weijia.vulndroid.ui.theme.VulnButton
 import com.weijia.vulndroid.ui.theme.VulnDroidTheme
+import com.weijia.vulndroid.ui.theme.VulnScreen
 
 /**
  * CryptoActivity — Jetpack Compose
  * ==================================
- * [M10] Interactive demo of broken cryptographic implementations:
+ * M10 Interactive demo of broken cryptographic implementations:
  *   • MD5 password hashing — no salt, no work factor, rainbow-table crackable
  *   • AES/ECB mode — deterministic, identical plaintext → identical ciphertext
  *   • Hardcoded key in InsecureCryptoUtil.kt — visible in decompiled APK
@@ -44,15 +52,17 @@ fun CryptoScreen(onBack: () -> Unit) {
     var ecbInput by remember { mutableStateOf("password123password123") }
     var ecbResult by remember { mutableStateOf("") }
 
-    VulnScreen(title = "Weak Cryptography", owaspTag = "M10 — OWASP Mobile Top 10",
-        owaspColor = AccentRed, onBack = onBack) {
+    VulnScreen(
+        title = "Weak Cryptography", owaspTag = "M10 — OWASP Mobile Top 10",
+        owaspColor = AccentRed, onBack = onBack
+    ) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
 
             // ── MD5 section ───────────────────────────────────────────────────
             SectionLabel("MD5 Password Hashing (Broken)")
             DangerBox(
                 title = "Why MD5 is broken for passwords",
-                body  = "• No salt → identical passwords = identical hashes\n" +
+                body = "• No salt → identical passwords = identical hashes\n" +
                         "• No work factor → GPU = 10 billion hashes/sec\n" +
                         "• Rainbow tables cover virtually all common passwords\n" +
                         "• CWE-916: Insufficient Password Hashing Iterations"
@@ -76,6 +86,7 @@ fun CryptoScreen(onBack: () -> Unit) {
                 crackNote = when (passwordInput) {
                     "password123", "admin", "123456", "qwerty" ->
                         "⚡ Cracked instantly at crackstation.net (< 1 second)"
+
                     else ->
                         "Submit to crackstation.net — likely cracked instantly"
                 }
@@ -84,7 +95,12 @@ fun CryptoScreen(onBack: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
                 CodeCard(text = md5Result, textColor = AccentRed)
                 Spacer(Modifier.height(4.dp))
-                Text(crackNote, color = AccentAmber, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                Text(
+                    crackNote,
+                    color = AccentAmber,
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace
+                )
             }
             AdbHint("crackstation.net → paste hash → cracked in < 1 second")
 
@@ -92,7 +108,7 @@ fun CryptoScreen(onBack: () -> Unit) {
             SectionLabel("AES/ECB Mode Encryption (Broken)")
             DangerBox(
                 title = "Why AES/ECB is broken",
-                body  = "• Each 16-byte block encrypted independently with same key\n" +
+                body = "• Each 16-byte block encrypted independently with same key\n" +
                         "• Identical plaintext blocks → identical ciphertext blocks\n" +
                         "• Patterns in plaintext visible in ciphertext (ECB Penguin)\n" +
                         "• Hardcoded key: \"vulndroid2024key\" visible in decompiled APK"
@@ -137,10 +153,10 @@ fun CryptoScreen(onBack: () -> Unit) {
             // Secure remediation
             SecureBox(
                 body = "Passwords:   Argon2 / bcrypt / scrypt\n" +
-                       "Symmetric:   AES/GCM with random IV per encrypt\n" +
-                       "Hashing:     SHA-256 or SHA-3 minimum\n" +
-                       "Key storage: Android Keystore (hardware-backed)\n" +
-                       "Key derivation: PBKDF2 with 600,000+ iterations"
+                        "Symmetric:   AES/GCM with random IV per encrypt\n" +
+                        "Hashing:     SHA-256 or SHA-3 minimum\n" +
+                        "Key storage: Android Keystore (hardware-backed)\n" +
+                        "Key derivation: PBKDF2 with 600,000+ iterations"
             )
             Spacer(Modifier.height(32.dp))
         }
