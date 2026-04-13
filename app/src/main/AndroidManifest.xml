@@ -14,6 +14,27 @@
          Extracts databases, SharedPreferences, files containing auth tokens and PII.
          FIX: Set android:allowBackup="false" or use android:fullBackupContent rules.
 
+    [M8] Exported Activity without permission (VulnerableDeepLinkActivity)
+         RISK: Any app on the device can launch this Activity and trigger sensitive flows.
+         FIX: Set android:exported="false" or add android:permission with custom permission.
+
+    [M8] Exported BroadcastReceiver (TokenRefreshReceiver)
+         RISK: Malicious apps can send broadcasts to trigger token refresh or read tokens.
+         FIX: Use LocalBroadcastManager for internal broadcasts, restrict with permissions.
+
+    [M8] Exported ContentProvider (UserDataProvider) without permission
+         RISK: Any app can query the content provider and read user data from the database.
+         FIX: Set android:exported="false" or add readPermission/writePermission.
+
+    [M6] Excessive permissions — READ_CALL_LOG, RECORD_AUDIO not needed for a notes app
+         RISK: Privacy violation, unnecessary data collection, Play Store policy violation.
+         FIX: Request only permissions required for core functionality.
+
+    [M5] usesCleartextTraffic="true" in network_security_config
+         RISK: App sends data over unencrypted HTTP — vulnerable to MITM on any network.
+         FIX: Enforce HTTPS only, remove cleartext allowance.
+
+
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -59,6 +80,62 @@
 
         <activity android:name=".CryptoActivity"
             android:exported="false" />
+
+        <activity android:name=".StorageActivity"
+            android:exported="false" />
+
+        <activity android:name=".NetworkActivity"
+            android:exported="false" />
+
+        <!--
+           [M8] VULNERABILITY: Exported Activity with no permission check.
+           Attack: `adb shell am start -n com.vulndroid.ui.VulnerableDeepLinkActivity`
+           Or from a malicious app: startActivity(Intent("com.vulndroid.RESET_PASSWORD"))
+           This bypasses the login screen entirely and goes straight to password reset.
+       -->
+        <activity
+            android:name=".VulnerableDeepLinkActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.vulndroid.RESET_PASSWORD" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            [M8] VULNERABILITY: Exported BroadcastReceiver with no permission.
+            Attack: `adb shell am broadcast -a com.vulndroid.TOKEN_REFRESH`
+            Triggers token refresh logic and logs the new token to Logcat.
+        -->
+        <receiver
+            android:name="com.vulndroid.vulnerabilities.TokenRefreshReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.vulndroid.TOKEN_REFRESH" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+            [M8] VULNERABILITY: Exported ContentProvider with no read/write permission.
+            Attack: `adb shell content query -uri content://com.vulndroid.provider/users`
+            Returns all user records including email, username, and plaintext password hash.
+        -->
+        <!--
+            [M8] VULNERABILITY: Exported ContentProvider with no read/write permission.
+            Attack: `adb shell content query -uri content://com.vulndroid.provider/users`
+            Returns all user records including email, username, and plaintext password hash.
+        -->
+        <provider
+            android:name=".UserDataProvider"
+            android:authorities="com.vulndroid.provider"
+            android:exported="true"
+            android:readPermission=""
+            android:writePermission="" />
+
+        <!-- SQL Injection demo screen — not exported, only reachable from Dashboard -->
+        <activity android:name=".SqlInjectionActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
