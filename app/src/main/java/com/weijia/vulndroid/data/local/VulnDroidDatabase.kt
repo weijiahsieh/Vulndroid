@@ -41,7 +41,7 @@ class VulnDroidDatabase(context: Context) :
 
     companion object {
         private const val TAG = "VulnDroid_DB"
-        private const val DB_NAME = "vulndroid.db"   // [M9] Unencrypted database
+        private const val DB_NAME = "vulndroid.db"   // M9 Unencrypted database
         private const val DB_VERSION = 1
 
         // Table and column names — visible in decompiled APK
@@ -59,7 +59,7 @@ class VulnDroidDatabase(context: Context) :
         const val TABLE_NOTES = "notes"
         const val COL_NOTE_ID = "id"
         const val COL_NOTE_OWNER = "owner_username"
-        const val COL_NOTE_CONTENT = "content"   // [M9] Sensitive notes stored unencrypted
+        const val COL_NOTE_CONTENT = "content"   // M9 Sensitive notes stored unencrypted
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -98,6 +98,13 @@ class VulnDroidDatabase(context: Context) :
             ($COL_USERNAME, $COL_PASSWORD, $COL_EMAIL, $COL_PHONE, $COL_DOB, $COL_CREDIT_CARD, $COL_IS_ADMIN)
             VALUES ('john.doe', '$weakHash', 'john@example.com', '+66-81-234-5678', '1990-05-15', '4242', 0)
         """)
+
+        db.execSQL("""
+            INSERT INTO $TABLE_USERS
+            ($COL_USERNAME, $COL_PASSWORD, $COL_EMAIL, $COL_PHONE, $COL_DOB, $COL_CREDIT_CARD, $COL_IS_ADMIN)
+            VALUES ('admin', '$weakHash', 'admin@vulndroid.com', '+1-555-000-0001', '1985-01-01', '1337', 1)
+        """)
+
         db.execSQL("""
             INSERT INTO $TABLE_USERS
             ($COL_USERNAME, $COL_PASSWORD, $COL_EMAIL, $COL_PHONE, $COL_DOB, $COL_CREDIT_CARD, $COL_IS_ADMIN)
@@ -105,7 +112,7 @@ class VulnDroidDatabase(context: Context) :
         """)
         db.execSQL("""
             INSERT INTO $TABLE_NOTES ($COL_NOTE_OWNER, $COL_NOTE_CONTENT)
-            VALUES ('admin@vulndroid.com', 'Server root password: Sup3rS3cr3t!2024')
+            VALUES ('admin', 'Server root password: Sup3rS3cr3t!2024')
         """)
     }
 
