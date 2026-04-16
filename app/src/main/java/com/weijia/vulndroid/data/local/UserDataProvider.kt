@@ -18,11 +18,11 @@ import androidx.core.net.toUri
  *   android:writePermission=""
  *
  * Any app on the device can query all user data:
- *   content query --uri content://com.vulndroid.provider/users
- *   content query --uri content://com.vulndroid.provider/notes
+ *   content query --uri content://com.weijia.vulndroid.provider/users
+ *   content query --uri content://com.weijia.vulndroid.provider/notes
  *
  * Via ADB (no root needed on debug build):
- *   adb shell content query --uri content://com.vulndroid.provider/users
+ *   adb shell content query --uri content://com.weijia.vulndroid.provider/users
  *
  * IMPACT: Full database exposure — emails, phone numbers, MD5 hashes,
  * credit card last4, date of birth, session tokens. All returned to
@@ -30,14 +30,14 @@ import androidx.core.net.toUri
  *
  * REMEDIATION:
  *   android:exported="false"
- *   OR android:readPermission="com.vulndroid.permission.READ_DATA"
+ *   OR android:readPermission="com.weijia.vulndroid.permission.READ_DATA"
  *      (with protectionLevel="signature" so only VulnDroid can hold it)
  */
 class UserDataProvider : ContentProvider() {
 
     companion object {
         private const val TAG = "VulnDroid_Provider"
-        const val AUTHORITY = "com.vulndroid.provider"
+        const val AUTHORITY = "com.weijia.vulndroid.provider"
 
         // URI patterns
         private const val USERS = 1

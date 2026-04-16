@@ -49,7 +49,7 @@ fun CryptoScreen(onBack: () -> Unit) {
     var md5Result by remember { mutableStateOf("") }
     var crackNote by remember { mutableStateOf("") }
 
-    var ecbInput by remember { mutableStateOf("password123password123") }
+    var ecbInput by remember { mutableStateOf("") }
     var ecbResult by remember { mutableStateOf("") }
 
     VulnScreen(

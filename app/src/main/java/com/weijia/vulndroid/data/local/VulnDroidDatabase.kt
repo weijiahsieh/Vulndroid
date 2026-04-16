@@ -28,8 +28,8 @@ import android.util.Log
  * M9 Insecure Data Storage — Plaintext sensitive data in SQLite
  *      Passwords stored as MD5 hashes (broken) — see InsecureCryptoUtil.
  *      Notes column stores content in plaintext with no encryption.
- *      Database file at: /data/data/com.vulndroid/databases/vulndroid.db
- *      Extraction: `adb shell run-as com.vulndroid sqlite3 databases/vulndroid.db .dump`
+ *      Database file at: /data/data/com.weijia.vulndroid/databases/vulndroid.db
+ *      Extraction: `adb shell run-as com.weijia.vulndroid sqlite3 databases/vulndroid.db .dump`
  *
  * M9 No database encryption
  *      Standard SQLiteOpenHelper creates an unencrypted database file.

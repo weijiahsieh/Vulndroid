@@ -29,7 +29,7 @@ import com.weijia.vulndroid.ui.theme.VulnDroidTheme
  * M8 Exported Activity with no permission — reachable by any app or adb.
  *
  * Attack:
- *   adb shell am start -n com.vulndroid/.ui.VulnerableDeepLinkActivity
+ *   adb shell am start -n com.weijia.vulndroid/.ui.VulnerableDeepLinkActivity
  *
  * This bypasses login entirely — the password reset form loads with zero auth.
  * In a real app this could trigger server-side account takeover.
@@ -65,7 +65,7 @@ fun DeepLinkScreen(onBack: () -> Unit) {
                     "or directly via adb — no login required.\n\n" +
                     "Attack command:\n" +
                     "adb shell am start \\\n" +
-                    "  -n com.vulndroid/.ui.VulnerableDeepLinkActivity"
+                    "  -n com.weijia.vulndroid/.ui.VulnerableDeepLinkActivity"
         )
 
         Spacer(Modifier.height(24.dp))

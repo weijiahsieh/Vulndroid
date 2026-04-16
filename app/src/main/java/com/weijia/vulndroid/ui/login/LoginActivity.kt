@@ -175,7 +175,7 @@ class LoginActivity : ComponentActivity() {
         // M9 VULNERABILITY: Credentials and plaintext password stored in SharedPreferences.
         // SharedPreferences writes an unencrypted XML file to internal storage.
         // On a debug build, no root is needed to read it:
-        //   adb shell run-as com.vulndroid cat shared_prefs/user_session.xml
+        //   adb shell run-as com.weijia.vulndroid cat shared_prefs/user_session.xml
         //
         // Note: we store the password field from SharedPreferences for the M9 demo
         // in StorageActivity. In a real app you should NEVER store the password at

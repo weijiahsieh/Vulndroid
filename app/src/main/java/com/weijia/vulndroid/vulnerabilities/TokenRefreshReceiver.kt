@@ -14,11 +14,11 @@ import androidx.core.content.edit
  * Exported BroadcastReceiver with no permission requirement.
  *
  * Any app on the device can trigger this receiver:
- *   val intent = Intent("com.vulndroid.TOKEN_REFRESH")
+ *   val intent = Intent("com.weijia.vulndroid.TOKEN_REFRESH")
  *   context.sendBroadcast(intent)
  *
  * Via ADB:
- *   adb shell am broadcast -a com.vulndroid.TOKEN_REFRESH
+ *   adb shell am broadcast -a com.weijia.vulndroid.TOKEN_REFRESH
  *
  * IMPACT:
  * 1. Attacker triggers token refresh — new token is generated and logged to Logcat
@@ -31,7 +31,7 @@ import androidx.core.content.edit
  *
  * REMEDIATION:
  *   android:exported="false" — use LocalBroadcastManager for internal broadcasts
- *   OR add: android:permission="com.vulndroid.permission.TOKEN_REFRESH"
+ *   OR add: android:permission="com.weijia.vulndroid.permission.TOKEN_REFRESH"
  *   (a custom signature-level permission that only VulnDroid can grant)
  */
 class TokenRefreshReceiver : BroadcastReceiver() {
@@ -41,7 +41,7 @@ class TokenRefreshReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != "com.vulndroid.TOKEN_REFRESH") return
+        if (intent.action != "com.weijia.vulndroid.TOKEN_REFRESH") return
 
         // [M8] VULNERABILITY: No check that the sender is our own app
         // Any sender can reach this code path

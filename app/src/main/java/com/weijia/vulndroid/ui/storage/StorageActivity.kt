@@ -113,7 +113,7 @@ fun StorageScreen(
             // SharedPreferences section
             SectionLabel("SharedPreferences Contents")
             CodeCard(text = prefsData, textColor = AccentAmber)
-            AdbHint("adb shell run-as com.vulndroid cat shared_prefs/user_session.xml")
+            AdbHint("adb shell run-as com.weijia.vulndroid cat shared_prefs/user_session.xml")
 
             // SQLite notes section
             SectionLabel("Unencrypted Notes Database (M9 + M4)")
@@ -145,7 +145,7 @@ fun StorageScreen(
                 ResultRow(title = "Note #${i + 1} — plaintext in vulndroid.db", content = note)
                 Spacer(Modifier.height(6.dp))
             }
-            AdbHint("adb shell run-as com.vulndroid sqlite3 databases/vulndroid.db 'SELECT * FROM notes'")
+            AdbHint("adb shell run-as com.weijia.vulndroid sqlite3 databases/vulndroid.db 'SELECT * FROM notes'")
 
             // External log section
             SectionLabel("External Storage Log (M9 + M6)")

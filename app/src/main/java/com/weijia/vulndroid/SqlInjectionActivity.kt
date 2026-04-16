@@ -131,7 +131,7 @@ fun SqlInjectionScreen(
                 Spacer(Modifier.height(6.dp))
             }
 
-            AdbHint("adb shell content query --uri content://com.vulndroid.provider/users")
+            AdbHint("adb shell content query --uri content://com.weijia.vulndroid.provider/users")
             Spacer(Modifier.height(32.dp))
         }
     }
